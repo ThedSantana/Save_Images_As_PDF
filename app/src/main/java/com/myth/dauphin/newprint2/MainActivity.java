@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Bundle;
@@ -29,44 +30,109 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private static final int RESULT_LOAD_IMAGE = 1;
+    private static final int RESULT_LOAD_IMAGE1 = 1;
+    private static final int RESULT_LOAD_IMAGE2 = 2;
+    private static final int RESULT_LOAD_IMAGE3 = 3;
+    private static final int RESULT_LOAD_IMAGE4 = 4;
 
-    ImageView imageToUpload;
-    EditText etUpLoadName;
+    ImageView image1, image2, image3, image4;
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    ArrayList<Bitmap> bitmapArray = new ArrayList<Bitmap>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageToUpload = (ImageView) findViewById(R.id.imageToUpLoad);
-        etUpLoadName = (EditText) findViewById(R.id.etUpLoadName);
+        image1 = (ImageView) findViewById(R.id.image1);
+        image2 = (ImageView) findViewById(R.id.image2);
+        image3 = (ImageView) findViewById(R.id.image3);
+        image4 = (ImageView) findViewById(R.id.image4);
 
-//        imageToUpload.setOnClickListener(this);
+        image1.setOnClickListener(this);
+        image2.setOnClickListener(this);
+        image3.setOnClickListener(this);
+        image4.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()) {
+            case R.id.image1:
+                Intent galleryIntent1 = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent1, RESULT_LOAD_IMAGE1);
+                break;
+            case R.id.image2:
+                Intent galleryIntent2 = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent2, RESULT_LOAD_IMAGE2);
+                break;
+            case R.id.image3:
+                Intent galleryIntent3 = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent3, RESULT_LOAD_IMAGE3);
+                break;
+            case R.id.image4:
+                Intent galleryIntent4 = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent4, RESULT_LOAD_IMAGE4);
+                break;
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            imageToUpload.setImageURI(selectedImage);
-            try {
-                getThumbnail(selectedImage);
-            } catch (FileNotFoundException e) {
-                return;
-            }
+        switch(requestCode) {
+            case RESULT_LOAD_IMAGE1:
+                Uri selectedImage1 = data.getData();
+                image1.setImageURI(selectedImage1);
+                try {
+                    getThumbnail(selectedImage1);
+                } catch (FileNotFoundException e) {
+                    return;
+                }
+                break;
+
+            case RESULT_LOAD_IMAGE2:
+                Uri selectedImage2 = data.getData();
+                image2.setImageURI(selectedImage2);
+                try {
+                    getThumbnail(selectedImage2);
+                } catch (FileNotFoundException e) {
+                    return;
+                }
+                break;
+
+            case RESULT_LOAD_IMAGE3:
+                Uri selectedImage3 = data.getData();
+                image3.setImageURI(selectedImage3);
+                try {
+                    getThumbnail(selectedImage3);
+                } catch (FileNotFoundException e) {
+                    return;
+                }
+                break;
+
+            case RESULT_LOAD_IMAGE4:
+                Uri selectedImage4 = data.getData();
+                image4.setImageURI(selectedImage4);
+                try {
+                    getThumbnail(selectedImage4);
+                } catch (FileNotFoundException e) {
+                    return;
+                }
+                break;
         }
+
     }
 
     public void getThumbnail(Uri uri) throws FileNotFoundException {
         InputStream input = this.getContentResolver().openInputStream(uri);
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmap = BitmapFactory.decodeStream(input, null, bitmapOptions);
+        bitmapArray.add(bitmap);
     }
 
     public class MyPrintDocumentAdapter extends PrintDocumentAdapter
@@ -75,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         private int pageHeight;
         private int pageWidth;
         public PdfDocument myPdfDocument;
-        public int totalpages = 1;
+        public int totalpages = bitmapArray.size();
 
         public MyPrintDocumentAdapter(Context context)
         {
@@ -178,15 +244,7 @@ public class MainActivity extends AppCompatActivity {
 
             PdfDocument.PageInfo pageInfo = page.getInfo();
 
-            canvas.drawBitmap(bitmap, null, new Rect(0,0,pageInfo.getPageWidth(),pageInfo.getPageHeight()*8/10), null);
-
-            paint.setTextSize(40);
-            canvas.drawText(
-                    etUpLoadName.getText().toString(),
-                    leftMargin,
-                    titleBaseLine+pageInfo.getPageHeight()*8/10,
-                    paint);
-
+            canvas.drawBitmap(bitmapArray.get(pagenumber-1), null, new Rect(0,0,pageInfo.getPageWidth(),pageInfo.getPageHeight()), null);
         }
 
     }
@@ -203,9 +261,4 @@ public class MainActivity extends AppCompatActivity {
                 null);
     }
 
-//    @Override
-    public void getImage(View v) {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, RESULT_LOAD_IMAGE);
-    }
 }
